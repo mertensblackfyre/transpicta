@@ -202,9 +202,9 @@ func GetShowByNameHandler(w http.ResponseWriter, r *http.Request) error {
 
 func main()  {
 	routes := mux.NewRouter()
-	routes.HandleFunc("/movies/limit={limit}",MakeHTTPHandler(GetAllMoviesHandler))
+	routes.HandleFunc("/movies/limit/{limit}",MakeHTTPHandler(GetAllMoviesHandler))
 	routes.HandleFunc("/movie/{name}",MakeHTTPHandler(GetMovieByNameHandler))
-	routes.HandleFunc("/shows/limit={limit}",MakeHTTPHandler(GetAllShowsHandler))
+	routes.HandleFunc("/shows/limit/{limit}",MakeHTTPHandler(GetAllShowsHandler))
 	routes.HandleFunc("/show/{name}",MakeHTTPHandler(GetShowByNameHandler))
 	
 	log.Fatal(http.ListenAndServe(":8000",routes))
