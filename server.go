@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -20,11 +20,6 @@ type Result struct {
 	Image string `json:"image"`
 }
 
-type Movies struct {
-	Name string 	`json:"name"`
-	Information string `json:"information"`
-	Image string `json:"image"`
-}
 
 type APIError struct{
 	Err string
@@ -48,7 +43,7 @@ func ParseJSONFile(filename string) []Result {
 	log.Println("The file is opened successfully...")
 	defer file.Close()
  
-	bytes, _ := ioutil.ReadAll(file)
+	bytes, _ := io.ReadAll(file)
 	json.Unmarshal([]byte(bytes), &movie)
 
 	return movie
@@ -86,18 +81,18 @@ func MakeHTTPHandler(f APIFunc) http.HandlerFunc {
 	}
 }
 
-func Scraper(category string,limit string) []Movies{
+func Scraper(category string,limit string) []Result{
 	url := "https://sflix.to/top-imdb?type="+ category
 	c := colly.NewCollector(colly.AllowedDomains("sflix.to"))
 
-	var items []Movies
+	var items []Result
 
 	c.OnError(func(r *colly.Response, e error) {
 		fmt.Printf("Error while scraping: %s\n", e.Error())
 	})
 
 	c.OnHTML("div.film_list-wrap div[class=flw-item]", func(h *colly.HTMLElement) {
-		item := Movies{
+		item := Result{
 			Name: h.ChildText("h2.film-name"),
 			Information:  h.ChildText("div.fd-infor span.fdi-item"),
 			Image: h.ChildAttr("img","data-src"),
@@ -116,17 +111,16 @@ func Scraper(category string,limit string) []Movies{
 
 	c.OnRequest(func(r *colly.Request){
 		r.Headers.Set("Accept-Language", "en-US;q=0.9")
-
 		fmt.Printf("Visiting: %s\n", r.URL)		
 	})
 
 	c.Visit(url)
 
 	return items
-
 }
 
 func GetAllMoviesHandler(w http.ResponseWriter, r *http.Request) error {
+	
 	params := mux.Vars(r)
 	if r.Method != http.MethodGet {
 		return APIError{Err: "Invalid Method", Status:http.StatusMethodNotAllowed}
@@ -151,24 +145,46 @@ func GetAllShowsHandler(w http.ResponseWriter, r *http.Request) error {
 
 func GetMovieByNameHandler(w http.ResponseWriter, r *http.Request) error {
 	params := mux.Vars(r)
+	url := "https://sflix.to/top-imdb?type=movie"
+	c := colly.NewCollector(colly.AllowedDomains("sflix.to"))
+	var found bool
+
+	var items []Result
+
+	c.OnError(func(r *colly.Response, e error) {
+		fmt.Printf("Error while scraping: %s\n", e.Error())
+	})
+
+	c.OnHTML("div.film_list-wrap div[class=flw-item]", func(h *colly.HTMLElement) {
+		if h.ChildText("h2.film-name") == params["name"]  {
+			found = true
+			item := Result{
+				Name: h.ChildText("h2.film-name"),
+				Information:  h.ChildText("div.fd-infor span.fdi-item"),
+				Image: h.ChildAttr("img","data-src"),
+			}				
+			items  = append(items, item)
+		}
+	})
+
+		c.OnHTML("[title=Next]",func(h *colly.HTMLElement) {
+			next_page := h.Request.AbsoluteURL(h.Attr(("href")))
+			if !found{
+				c.Visit(next_page)
+			}
+	
+		})	
+
+	c.OnRequest(func(r *colly.Request){
+		r.Headers.Set("Accept-Language", "en-US;q=0.9")
+
+		fmt.Printf("Visiting: %s\n", r.URL)		
+	})
+
+	c.Visit(url)
 
 	if r.Method != http.MethodGet {
 		return APIError{Err: "Invalid Method", Status:http.StatusMethodNotAllowed}
-	}
-
-	movies := Scraper("movie","")
-	var items []Result
-
-	for i := 0; i < len(movies); i++ {
-		if movies[i].Name == params["name"] {
-			fmt.Println(movies[i].Name)
-			result := &Result{
-				Name: movies[i].Name,
-				Information: movies[i].Information,
-				Image: movies[i].Image,
-			}
-			items = append(items, *result)
-		} 
 	}
 
 	return WriteJSON(w,http.StatusOK,items)
@@ -177,24 +193,46 @@ func GetMovieByNameHandler(w http.ResponseWriter, r *http.Request) error {
 
 func GetShowByNameHandler(w http.ResponseWriter, r *http.Request) error {
 	params := mux.Vars(r)
+	url := "https://sflix.to/top-imdb?type=tv"
+	c := colly.NewCollector(colly.AllowedDomains("sflix.to"))
+	var found bool
+
+	var items []Result
+
+	c.OnError(func(r *colly.Response, e error) {
+		fmt.Printf("Error while scraping: %s\n", e.Error())
+	})
+
+	c.OnHTML("div.film_list-wrap div[class=flw-item]", func(h *colly.HTMLElement) {
+		if h.ChildText("h2.film-name") == params["name"]  {
+			found = true
+			item := Result{
+				Name: h.ChildText("h2.film-name"),
+				Information:  h.ChildText("div.fd-infor span.fdi-item"),
+				Image: h.ChildAttr("img","data-src"),
+			}				
+			items  = append(items, item)
+		}
+	})
+
+		c.OnHTML("[title=Next]",func(h *colly.HTMLElement) {
+			next_page := h.Request.AbsoluteURL(h.Attr(("href")))
+			if !found{
+				c.Visit(next_page)
+			}
+	
+		})	
+
+	c.OnRequest(func(r *colly.Request){
+		r.Headers.Set("Accept-Language", "en-US;q=0.9")
+
+		fmt.Printf("Visiting: %s\n", r.URL)		
+	})
+
+	c.Visit(url)
 
 	if r.Method != http.MethodGet {
 		return APIError{Err: "Invalid Method", Status:http.StatusMethodNotAllowed}
-	}
-
-	shows := Scraper("tv","")
-	var items []Result
-
-	for i := 0; i < len(shows); i++ {
-		if shows[i].Name == params["name"] {
-			fmt.Println(shows[i].Name)
-			result := &Result{
-				Name: shows[i].Name,
-				Information: shows[i].Information,
-				Image: shows[i].Image,
-			}
-			items = append(items, *result)
-		} 
 	}
 
 	return WriteJSON(w,http.StatusOK,items)
