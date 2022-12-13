@@ -5,10 +5,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/gocolly/colly"
 	"github.com/gorilla/mux"
@@ -29,24 +27,6 @@ type APIFunc func(http.ResponseWriter,*http.Request) error
 
 func (e APIError) Error() string {
 	return e.Err
-}
-
-
-func ParseJSONFile(filename string) []Result {
-	file, err := os.Open("shows.json")
-	var movie []Result
-
-	if err != nil {
-	   log.Fatal(err)
-	}
-
-	log.Println("The file is opened successfully...")
-	defer file.Close()
- 
-	bytes, _ := io.ReadAll(file)
-	json.Unmarshal([]byte(bytes), &movie)
-
-	return movie
 }
 
 func GenerateSecureToken(length int) string {
@@ -81,7 +61,7 @@ func MakeHTTPHandler(f APIFunc) http.HandlerFunc {
 	}
 }
 
-func Scraper(category string,limit string) []Result{
+func Scraper(category string,limit string) []Result { 
 	url := "https://sflix.to/top-imdb?type="+ category
 	c := colly.NewCollector(colly.AllowedDomains("sflix.to"))
 
@@ -247,6 +227,3 @@ func main()  {
 	
 	log.Fatal(http.ListenAndServe(":8000",routes))
 }
-
-
-
