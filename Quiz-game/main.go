@@ -12,6 +12,7 @@ import (
 func main() {
 
 	QA := [][]string{}
+	
 	score := 0
 
 	filename := flag.String("csv", "problems.csv", "The filename of the csv")
@@ -60,7 +61,6 @@ func main() {
 			}
 			fmt.Println("Correct Answer")
 			score++
-
 		}
 	}
 

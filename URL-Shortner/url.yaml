@@ -1,0 +1,8 @@
+path:
+   - /tweet
+   - /face
+   - /insta
+url:
+   - https://twitter.com
+   - https://facebook.com
+   - https://instagram.com
