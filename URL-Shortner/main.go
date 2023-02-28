@@ -10,18 +10,18 @@ import (
 
 func main() {
 
-	port := flag.String("port", ":3000", "Port number")
+	filename := flag.String("yml", "url.yaml", "The yaml file you want to read")
 	flag.Parse()
 
 	mux := DefaultMux()
 
-	ya, err := YAMLHandler("url.yaml", mux)
+	ya, err := YAMLHandler(*filename, mux)
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	log.Println("Server running on port ", *port)
-	http.ListenAndServe(*port, ya)
+	log.Println("Server running on port 8000 ")
+	http.ListenAndServe(":8000", ya)
 }
 
 func DefaultMux() *http.ServeMux {
