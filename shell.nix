@@ -5,16 +5,14 @@ let
 in
   pkgs.mkShell {
     packages = [
-     pkgs.gdb
-
+    pkgs.gdb
     pkgs.cmake
     pkgs.pkg-config
     pkgs.meson
     pkgs.ninja
-
-    # Add some libraries
-    pkgs.boost
-    pkgs.fmt
+    pkgs.libpng
+    pkgs.libwebp
+    pkgs.libjpeg
+    pkgs.spdlog
 ];
   }
-

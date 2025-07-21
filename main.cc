@@ -1,10 +1,11 @@
-#include <cstddef>
-#include <fstream>
+#include <webp/decode.h>
+#include <png.h>
 #include <iostream>
-#include <sstream>
-#include <string>
+#include <jpeglib.h>
 
-int main() {
+
+
+int main(int argc, char *argv[]) {
 
 
 
