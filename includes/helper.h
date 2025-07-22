@@ -1,17 +1,19 @@
 #ifndef HELPER_H
 #define HELPER_H
 
+#include "decoder.h"
+#include "transpicta.h"
 #include <algorithm>
 #include <dirent.h>
 #include <iostream>
-#include <vector>
 #include <spdlog/spdlog.h>
+#include <vector>
 
 class Helper {
 public:
   inline static void get_dirs(std::vector<std::string> &pages,
                               const std::string &path);
-  inline static void get_files(std::vector<std::string> &pages,
+  inline static void get_files(const std::string &option,
                                const std::string &path,
                                const std::string &main_path);
 
@@ -37,7 +39,7 @@ inline void Helper::get_dirs(std::vector<std::string> &pages,
 
     if (dir->d_type == DT_DIR) {
       spdlog::info("Traversing {}", dir->d_name);
-      get_files(pages, dir->d_name, path);
+      get_files("k", dir->d_name, path);
 
       continue;
     };
@@ -45,11 +47,11 @@ inline void Helper::get_dirs(std::vector<std::string> &pages,
   closedir(dp);
 };
 
-inline void Helper::get_files(std::vector<std::string> &pages,
+inline void Helper::get_files(const std::string &option,
                               const std::string &path,
                               const std::string &main_path) {
   struct dirent *dir;
-  std::string ss = main_path + "/" + path;
+  std::string ss =  path;
   DIR *dp = opendir(ss.c_str());
 
   if (!dp) {
@@ -65,8 +67,13 @@ inline void Helper::get_files(std::vector<std::string> &pages,
       continue;
     };
     std::string final_path = path + "/" + dir->d_name;
+    std::string new_path = path + "/" + dir->d_name;
     if (!final_path.empty()) {
-      pages.push_back(dir->d_name);
+
+        int wid, len;
+        uint8_t* rgba = Decoder::decoder_webp(final_path.c_str(),&wid,&len);
+        Transpicta::transpicta_save_jpeg(final_path.c_str(),rgba,wid,len);
+        std::cout << final_path << std::endl;
     }
   }
   closedir(dp);

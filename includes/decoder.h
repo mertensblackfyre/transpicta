@@ -9,10 +9,10 @@
 
 class Decoder {
 public:
-  inline uint8_t *decoder_webp(const char *file, int *width, int *height);
+  inline static uint8_t *decoder_webp(const char *file, int *width, int *height);
 };
 
-uint8_t *Decoder::decoder_webp(const char *file, int *width, int *height) {
+inline uint8_t *Decoder::decoder_webp(const char *file, int *width, int *height) {
   FILE *f = fopen(file, "rb");
   fseek(f, 0, SEEK_END);
   size_t size = ftell(f);
