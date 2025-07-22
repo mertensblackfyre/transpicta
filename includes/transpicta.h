@@ -11,8 +11,6 @@
 
 class Transpicta {
 public:
-  inline uint8_t *transpicta_decode_webp(const char *file, int *width,
-                                         int *height);
   inline void transpicta_save_png(const char *filename, uint8_t *rgba,
                                   int width, int height);
 
@@ -83,19 +81,4 @@ void Transpicta::transpicta_save_png(const char *filename, uint8_t *rgba,
   png_destroy_write_struct(&png, &info);
 };
 
-uint8_t *Transpicta::transpicta_decode_webp(const char *file, int *width,
-                                            int *height) {
-  FILE *f = fopen(file, "rb");
-  fseek(f, 0, SEEK_END);
-  size_t size = ftell(f);
-  rewind(f);
-
-  uint8_t *data = (uint8_t *)malloc(size);
-  fread(data, size, 1, f);
-  fclose(f);
-
-  uint8_t *rgba = WebPDecodeRGBA(data, size, width, height);
-  free(data);
-  return rgba;
-};
 #endif
