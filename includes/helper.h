@@ -5,6 +5,7 @@
 #include "transpicta.h"
 #include <algorithm>
 #include <dirent.h>
+#include <filesystem>
 #include <iostream>
 #include <spdlog/spdlog.h>
 #include <vector>
@@ -14,8 +15,7 @@ public:
   inline static void get_dirs(std::vector<std::string> &pages,
                               const std::string &path);
   inline static void get_files(const std::string &option,
-                               const std::string &path,
-                               const std::string &main_path);
+                               const std::string &path);
 
   inline static std::string utils_get_extension(const std::string &f_name);
   inline static void sort_files(std::vector<std::string> &pages);
@@ -39,7 +39,7 @@ inline void Helper::get_dirs(std::vector<std::string> &pages,
 
     if (dir->d_type == DT_DIR) {
       spdlog::info("Traversing {}", dir->d_name);
-      get_files("k", dir->d_name, path);
+      // get_files("k", dir->d_name, path);
 
       continue;
     };
@@ -48,10 +48,20 @@ inline void Helper::get_dirs(std::vector<std::string> &pages,
 };
 
 inline void Helper::get_files(const std::string &option,
-                              const std::string &path,
-                              const std::string &main_path) {
+                              const std::string &path) {
+  std::string s = path + option;
+  try {
+    if (std::filesystem::create_directory(s)) {
+      spdlog::info("Directory {} created successfully", s);
+    } else {
+      spdlog::warn("Directory {} already exists or could not be created.", s);
+    }
+  } catch (const std::filesystem::filesystem_error &e) {
+    spdlog::warn("Error creating directory: ", e.what());
+  };
+
   struct dirent *dir;
-  std::string ss =  path;
+  std::string ss = path;
   DIR *dp = opendir(ss.c_str());
 
   if (!dp) {
@@ -67,13 +77,14 @@ inline void Helper::get_files(const std::string &option,
       continue;
     };
     std::string final_path = path + "/" + dir->d_name;
-    std::string new_path = path + "/" + dir->d_name;
+    std::string new_path =
+        s + "/" + utils_get_extension(dir->d_name) + ".jpg";
     if (!final_path.empty()) {
 
-        int wid, len;
-        uint8_t* rgba = Decoder::decoder_webp(final_path.c_str(),&wid,&len);
-        Transpicta::transpicta_save_jpeg(final_path.c_str(),rgba,wid,len);
-        std::cout << final_path << std::endl;
+      int wid, len;
+      uint8_t *rgba = Decoder::decoder_webp(final_path.c_str(), &wid, &len);
+      Transpicta::transpicta_save_jpeg(new_path.c_str(), rgba, wid, len);
+      std::cout << new_path << std::endl;
     }
   }
   closedir(dp);
@@ -100,7 +111,7 @@ inline std::string Helper::utils_get_extension(const std::string &f_name) {
     return "";
   std::string ext = "";
   try {
-    ext = f_name.substr(dot_pos, f_name.size() - 1);
+    ext = f_name.substr(0, dot_pos);
   } catch (std::exception error_) {
     spdlog::error("{}", error_.what());
     return ext;
