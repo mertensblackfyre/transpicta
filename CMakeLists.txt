@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(Transpicta)
+project(transpicta)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -11,7 +11,7 @@ add_executable(Transpicta
     main.cc
 )
 
-target_include_directories(Transpicta PRIVATE
+target_include_directories(transpicta PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/includes
     /usr/include   # for libharu headers on Arch
 )
