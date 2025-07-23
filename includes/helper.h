@@ -15,16 +15,18 @@ public:
   inline static void get_dirs(const std::string &path);
   inline static void get_files(const std::string &option,
                                const std::string &path,
-                               const std::string &m_path);
+                               const std::string &output_dir);
 
   inline static std::string utils_get_extension(const std::string &f_name);
-  inline static void sort_files(std::vector<std::string> &pages);
-  inline static int extract_num(const std::string &fname);
+  inline static std::string helper_create_dir(const std::string &dir_name,
+                                              const std::string &suffix);
 };
 
 inline void Helper::get_dirs(const std::string &path) {
 
+  std::string output_dir = helper_create_dir(path, "-jpeg");
   struct dirent *dir;
+
   DIR *dp = opendir(path.c_str());
 
   if (!dp) {
@@ -38,7 +40,10 @@ inline void Helper::get_dirs(const std::string &path) {
 
     if (dir->d_type == DT_DIR) {
       spdlog::info("Traversing {}", dir->d_name);
-      get_files("JPEG", dir->d_name, path);
+      std::string tmp2 = output_dir + "/" + dir->d_name;
+      std::string tmp = path + "/" + dir->d_name;
+      std::string rr = helper_create_dir(tmp2, "");
+      get_files("JPEG", tmp, rr);
       continue;
     };
   }
@@ -47,20 +52,10 @@ inline void Helper::get_dirs(const std::string &path) {
 
 inline void Helper::get_files(const std::string &option,
                               const std::string &path,
-                              const std::string &m_path) {
-  std::string s = path + option;
-  try {
-    if (std::filesystem::create_directory(s)) {
-      spdlog::info("Directory {} created successfully", s);
-    } else {
-      spdlog::warn("Directory {} already exists or could not be created.", s);
-    }
-  } catch (const std::filesystem::filesystem_error &e) {
-    spdlog::warn("Error creating directory: ", e.what());
-  };
+                              const std::string &output_dir) {
 
   struct dirent *dir;
-  std::string ss = m_path + "/" + path;
+  std::string ss = path;
 
   DIR *dp = opendir(ss.c_str());
   if (!dp) {
@@ -76,33 +71,17 @@ inline void Helper::get_files(const std::string &option,
     };
 
     std::string final_path = path + "/" + dir->d_name;
-    std::string new_path = s + "/" + utils_get_extension(dir->d_name) + ".jpg";
+    std::string new_path =
+        output_dir + "/" + utils_get_extension(dir->d_name) + ".jpg";
+
     if (!final_path.empty()) {
-
       int wid, len;
-     // uint8_t *rgba = Decoder::decoder_webp(final_path.c_str(), &wid, &len);
-   //   Transpicta::transpicta_save_jpeg(new_path.c_str(), rgba, wid, len);
-
-      std::cout << "GREAT" << std::endl;
-      std::cout << new_path << std::endl;
+      uint8_t *rgba = Decoder::decoder_webp(final_path.c_str(), &wid, &len);
+      Transpicta::transpicta_save_jpeg(new_path.c_str(), rgba, wid, len);
+      spdlog::info("Successfully converted {} to ", dir->d_name);
     }
   }
   closedir(dp);
-};
-
-inline int Helper::extract_num(const std::string &fname) {
-
-  int num;
-  size_t hyphen_pos = fname.find('-');
-  if (hyphen_pos == std::string::npos)
-    return 0;
-  try {
-    num = std::stoi(fname.substr(0, hyphen_pos));
-  } catch (std::exception error_) {
-    spdlog::error("{}", error_.what());
-    return -1;
-  }
-  return num;
 };
 
 inline std::string Helper::utils_get_extension(const std::string &f_name) {
@@ -117,5 +96,24 @@ inline std::string Helper::utils_get_extension(const std::string &f_name) {
     return ext;
   }
   return ext;
+};
+
+inline std::string Helper::helper_create_dir(const std::string &dir_name,
+                                             const std::string &suffix) {
+
+  std::string s = dir_name + suffix;
+  try {
+    if (std::filesystem::create_directories(s)) {
+      spdlog::info("Directory {} created successfully", s);
+    } else {
+      spdlog::warn("Directory {} already exists or could not be created.", s);
+      return "";
+    }
+  } catch (const std::filesystem::filesystem_error &e) {
+    spdlog::error("Error creating directory: {} ", e.what());
+    return "";
+  };
+
+  return s;
 };
 #endif
