@@ -14,10 +14,10 @@ int main(int argc, char *argv[]) {
 
   std::string option = argv[1];
   std::string convert_to = argv[2];
+  std::string original_fname = argv[3];
+  std::string new_fname = argv[4];
 
   if (option == "-file") {
-    std::string original_fname = argv[3];
-    std::string new_fname = argv[4];
     std::string ext = Helper::get_extension(original_fname);
     if (ext == "webp") {
       int width, height;
@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
         return 0;
       };
       if (convert_to == "-png") {
-          Transpicta::transpicta_save_png(new_fname.c_str(),rgba,width,height);
+        Transpicta::transpicta_save_png(new_fname.c_str(), rgba, width, height);
         spdlog::info("Converted {} to png", original_fname);
         return 0;
       }
@@ -38,6 +38,7 @@ int main(int argc, char *argv[]) {
   };
 
   if (option == "-dir") {
+    Helper::get_files(convert_to, original_fname, new_fname);
   };
 
   // Helper::get_dirs(d_name);
