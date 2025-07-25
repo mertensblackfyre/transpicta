@@ -56,7 +56,6 @@ inline void Helper::get_files(const std::string &option,
 
   struct dirent *dir;
   std::string ss = path;
-
   DIR *dp = opendir(ss.c_str());
   if (!dp) {
     spdlog::error("{} does not exist or cannot be opened", ss.c_str());

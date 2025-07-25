@@ -15,4 +15,4 @@ in
     pkgs.libjpeg
     pkgs.spdlog
 ];
-  }
+}
