@@ -7,7 +7,7 @@ set(CMAKE_BUILD_TYPE Debug)
 
 find_package(spdlog REQUIRED)
 
-add_executable(Transpicta
+add_executable(transpicta
     main.cc
 )
 
@@ -17,7 +17,7 @@ target_include_directories(transpicta PRIVATE
 )
 
 # Link to libraries
-target_link_libraries(Transpicta PRIVATE
+target_link_libraries(transpicta PRIVATE
     webp
     png
     jpeg

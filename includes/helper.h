@@ -17,7 +17,7 @@ public:
                                const std::string &path,
                                const std::string &output_dir);
 
-  inline static std::string utils_get_extension(const std::string &f_name);
+  inline static std::string get_extension(const std::string &f_name);
   inline static std::string helper_create_dir(const std::string &dir_name,
                                               const std::string &suffix);
 };
@@ -72,7 +72,7 @@ inline void Helper::get_files(const std::string &option,
 
     std::string final_path = path + "/" + dir->d_name;
     std::string new_path =
-        output_dir + "/" + utils_get_extension(dir->d_name) + ".jpg";
+        output_dir + "/" + get_extension(dir->d_name) + ".jpg";
 
     if (!final_path.empty()) {
       int wid, len;
@@ -84,13 +84,13 @@ inline void Helper::get_files(const std::string &option,
   closedir(dp);
 };
 
-inline std::string Helper::utils_get_extension(const std::string &f_name) {
+inline std::string Helper::get_extension(const std::string &f_name) {
   size_t dot_pos = f_name.find('.');
   if (dot_pos == std::string::npos)
     return "";
   std::string ext = "";
   try {
-    ext = f_name.substr(0, dot_pos);
+    ext = f_name.substr(dot_pos + 1, f_name.size() - 1);
   } catch (std::exception error_) {
     spdlog::error("{}", error_.what());
     return ext;

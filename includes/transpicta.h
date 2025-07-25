@@ -11,7 +11,7 @@
 
 class Transpicta {
 public:
-  inline void transpicta_save_png(const char *filename, uint8_t *rgba,
+  inline static void transpicta_save_png(const char *filename, uint8_t *rgba,
                                   int width, int height);
 
   inline static void transpicta_save_jpeg(const char *filename, uint8_t *rgba,
